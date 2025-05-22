@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model parlay_props {
+  parlay_id      String       @db.VarChar(36)
+  prop_option_id String       @db.VarChar(36)
+  created        DateTime     @default(now()) @db.Timestamp(0)
+  modified       DateTime     @default(now()) @db.Timestamp(0)
+  active         Boolean      @default(true)
+  parlays        parlays      @relation(fields: [parlay_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_parlay_props_parlays_parlay_id")
+  prop_options   prop_options @relation(fields: [prop_option_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_parlay_props_prop_options_prop_option_id")
+
+  @@id([parlay_id, prop_option_id])
+  @@index([prop_option_id], map: "fk_parlay_props_prop_options_prop_option_id")
+}
+
+model parlays {
+  id           String         @id @db.VarChar(36)
+  user_id      String         @db.VarChar(36)
+  name         String         @db.Text
+  created      DateTime       @default(now()) @db.Timestamp(0)
+  modified     DateTime       @default(now()) @db.Timestamp(0)
+  active       Boolean        @default(true)
+  parlay_props parlay_props[]
+  users        users          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_parlays_users_user_id")
+
+  @@index([user_id], map: "fk_parlays_users_user_id")
+}
+
+model prop_options {
+  id                                    String         @id @db.VarChar(36)
+  prop_id                               String         @db.VarChar(36)
+  line                                  Decimal        @db.Decimal(10, 2)
+  odds                                  Int
+  created                               DateTime       @default(now()) @db.Timestamp(0)
+  modified                              DateTime       @default(now()) @db.Timestamp(0)
+  created_by                            String         @db.VarChar(36)
+  modified_by                           String         @db.VarChar(36)
+  active                                Boolean        @default(true)
+  parlay_props                          parlay_props[]
+  props                                 props          @relation(fields: [prop_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_prop_options_props_prop_id")
+  users_prop_options_created_byTousers  users          @relation("prop_options_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_prop_options_users_created_by")
+  users_prop_options_modified_byTousers users          @relation("prop_options_modified_byTousers", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_prop_options_users_modified_by")
+
+  @@index([prop_id], map: "fk_prop_options_props_prop_id")
+  @@index([created_by], map: "fk_prop_options_users_created_by")
+  @@index([modified_by], map: "fk_prop_options_users_modified_by")
+}
+
+model prop_points {
+  prop_id                              String   @db.VarChar(36)
+  created                              DateTime @default(now()) @db.Timestamp(0)
+  modified                             DateTime @default(now()) @db.Timestamp(0)
+  created_by                           String   @db.VarChar(36)
+  modified_by                          String   @db.VarChar(36)
+  active                               Boolean  @default(true)
+  props                                props    @relation(fields: [prop_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_prop_points_props_prop_id")
+  users_prop_points_created_byTousers  users    @relation("prop_points_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_prop_points_users_created_by")
+  users_prop_points_modified_byTousers users    @relation("prop_points_modified_byTousers", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_prop_points_users_modified_by")
+
+  @@id([prop_id, created, created_by])
+  @@index([created_by], map: "fk_prop_points_users_created_by")
+  @@index([modified_by], map: "fk_prop_points_users_modified_by")
+}
+
+model props {
+  id                             String         @id @unique(map: "id") @db.VarChar(36)
+  user_id                        String         @db.VarChar(36)
+  description                    String         @db.Text
+  ev                             Decimal        @db.Decimal(10, 2)
+  created                        DateTime       @default(now()) @db.Timestamp(0)
+  modified                       DateTime       @default(now()) @db.Timestamp(0)
+  created_by                     String         @db.VarChar(36)
+  modified_by                    String         @db.VarChar(36)
+  active                         Boolean        @default(true)
+  prop_options                   prop_options[]
+  prop_points                    prop_points[]
+  users_props_created_byTousers  users          @relation("props_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_props_users_created_by")
+  users_props_modified_byTousers users          @relation("props_modified_byTousers", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_props_users_modified_by")
+  users_props_user_idTousers     users          @relation("props_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_props_users_user_id")
+
+  @@index([created_by], map: "fk_props_users_created_by")
+  @@index([modified_by], map: "fk_props_users_modified_by")
+  @@index([user_id], map: "fk_props_users_user_id")
+}
+
+model users {
+  id                                           String         @id @db.VarChar(36)
+  name                                         String         @db.Text
+  username                                     String         @unique(map: "username") @db.VarChar(30)
+  email                                        String         @unique(map: "email") @db.VarChar(100)
+  password                                     String         @db.VarChar(255)
+  created                                      DateTime       @default(now()) @db.Timestamp(0)
+  modified                                     DateTime       @default(now()) @db.Timestamp(0)
+  parlays                                      parlays[]
+  prop_options_prop_options_created_byTousers  prop_options[] @relation("prop_options_created_byTousers")
+  prop_options_prop_options_modified_byTousers prop_options[] @relation("prop_options_modified_byTousers")
+  prop_points_prop_points_created_byTousers    prop_points[]  @relation("prop_points_created_byTousers")
+  prop_points_prop_points_modified_byTousers   prop_points[]  @relation("prop_points_modified_byTousers")
+  props_props_created_byTousers                props[]        @relation("props_created_byTousers")
+  props_props_modified_byTousers               props[]        @relation("props_modified_byTousers")
+  props_props_user_idTousers                   props[]        @relation("props_user_idTousers")
+}
