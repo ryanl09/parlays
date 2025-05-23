@@ -10,8 +10,9 @@ export default async function UserLayout({
   children: React.ReactNode;
   params: { userId: string };
 }) {
+  const { userId } = await params;
   const user = await prisma.users.findUnique({
-    where: { id: params.userId },
+    where: { id: userId },
     select: {
       id: true,
       name: true,

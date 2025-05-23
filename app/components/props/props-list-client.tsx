@@ -6,11 +6,15 @@ import { Avatar } from "@/components/user/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { formatDistanceToNow, format, differenceInDays, differenceInHours, differenceInMinutes } from "date-fns";
-import { CalendarIcon, Coins, ClockIcon } from "lucide-react";
+import { CalendarIcon, Coins, ClockIcon, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { TalliesSection } from "@/app/components/tallies/tallies-section";
 import { PropOptionsRefreshButton } from "./prop-options-refresh-button";
+import { deleteProp } from "@/app/actions/props/delete-prop";
+import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+import { usePath } from "@/hooks/use-path";
 
 type PropOption = {
   id: string;
@@ -60,6 +64,7 @@ interface PropsListClientProps {
 
 export function PropsListClient({ initialProps, currentUser, onRefreshHandler }: PropsListClientProps) {
   const [props, setProps] = useState<Prop[]>(initialProps);
+  const path = usePath();
 
   // Update props when initialProps changes (e.g., when search params change)
   useEffect(() => {
@@ -94,6 +99,17 @@ export function PropsListClient({ initialProps, currentUser, onRefreshHandler }:
           : prop
       )
     );
+  };
+
+  const handleDeleteProp = async (propId: string) => {
+    try {
+      await deleteProp({ propId, path });
+      // Remove the deleted prop from local state
+      setProps(prevProps => prevProps.filter(prop => prop.id !== propId));
+    } catch (error) {
+      console.error('Failed to delete prop:', error);
+      // You could add a toast notification here
+    }
   };
 
   // Current time for countdown calculations
@@ -157,8 +173,16 @@ export function PropsListClient({ initialProps, currentUser, onRefreshHandler }:
         
         return (
           <Card key={prop.id} className="overflow-hidden hover:shadow-md transition-shadow relative">
-            {/* Status badge */}
-            <div className="absolute top-2 right-2">
+            {/* Status badge and delete button */}
+            <div className="absolute top-2 right-2 flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteProp(prop.id)}
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
               <Badge variant={"default"} className={cn(isExpired ? "bg-destructive/50 text-destructive-foreground" : "bg-green-500")}>
                 {isExpired ? "Closed" : "Open"}
               </Badge>

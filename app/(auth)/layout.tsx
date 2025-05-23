@@ -11,11 +11,14 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
     }
 
     return (
-        <div className="flex h-screen overflow-hidden">
-            <Navigation>
-                {children}
-            </Navigation>
-            <ParlayResolver />
-        </div>
+        <>
+            <div className="flex h-screen overflow-hidden w-full">
+                <Navigation>
+                    {children}
+                </Navigation>
+                <ParlayResolver />
+
+            </div>
+        </>
     );
 }

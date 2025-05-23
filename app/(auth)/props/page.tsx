@@ -40,10 +40,13 @@ export default async function PropsPage({ searchParams }: { searchParams: { user
     
     return (
         <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
                 <UsersSelector users={filteredUsers} />
                 <PropsSortSelector defaultValue={sortBy} />
-                <PropsRefreshButton />
+                <div className="ml-auto">
+                    <div>&nbsp;</div>
+                    <PropsRefreshButton />
+                </div>
             </div>
             <Separator className="my-6" />
             <div className='flex items-center gap-2'>
