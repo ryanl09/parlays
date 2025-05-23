@@ -14,7 +14,7 @@ export const getProps = async ({ userId, sortBy }: { userId: string, sortBy: str
         // For popular sorting, we need to count how many active parlays each prop appears in
         props = await prisma.props.findMany({
             where: {
-                ...(userId === 'all' ? {} : { user_id: userId }),
+                AND: [ { user_id: {  not:  session.user.id }  }, {   ...(userId === "all" ? {} : { user_id:userId }) } ],
                 active: true,
             },
             include: {
@@ -137,7 +137,7 @@ export const getProps = async ({ userId, sortBy }: { userId: string, sortBy: str
         // Original logic for other sort types
         props = await prisma.props.findMany({
         where: {
-            ...(userId === 'all' ? {} : { user_id: userId }),
+            AND: [ { user_id: {  not:  session.user.id }  }, {   ...(userId === "all" ? {} : { user_id:userId }) }  ],
             active: true,
         },
         orderBy: {
