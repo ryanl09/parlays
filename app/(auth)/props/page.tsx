@@ -18,20 +18,12 @@ export default async function PropsPage({ searchParams }: { searchParams: { user
 
     const filteredUsers = users.filter((user) => user.id !== currentUser?.id)
 
-    filteredUsers.unshift({
-        id: 'all',
-        name: 'All',
-    })
-
-    // Only default to first user if no userId is provided at all
     if (!userId) {
         userId = filteredUsers[0].id;
     }
 
-    // Find the user after potentially setting the default
     let userExists = filteredUsers.find((user) => user.id === userId);
     
-    // If the userId doesn't exist in our filtered users, fall back to 'all'
     if (!userExists) {
         userId = 'all';
         userExists = filteredUsers.find((user) => user.id === userId);

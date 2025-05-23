@@ -11,6 +11,10 @@ export const getUsers = async () => {
         ]
     });
 
-    if (users === null) return [];
-    return users;
+    if (users === null) return [{ id: 'all', name: 'All' }];
+
+    return [
+        { id: 'all', name: 'All' },
+        ...users
+    ]
 }

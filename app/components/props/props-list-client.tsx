@@ -1,6 +1,7 @@
 'use client';
 
 import { PropOptionClient } from "@/app/components/prop-options/prop-option-client";
+import { AddToBetslipButton } from "@/app/components/betslip/add-to-betslip-button";
 import { Avatar } from "@/components/user/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -8,10 +9,11 @@ import { formatDistanceToNow, format, differenceInDays, differenceInHours, diffe
 import { CalendarIcon, Coins, ClockIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { TalliesSection } from "@/app/components/tallies/tallies-section";
 
 type PropOption = {
   id: string;
-  line: any; // Decimal from database
+  line: number; // Converted from Decimal in getProps action
   odds_over: number;
   odds_under: number;
   created: Date;
@@ -21,10 +23,20 @@ type PropOption = {
   };
 };
 
+type Tally = {
+  id: string;
+  propId: string;
+  created: Date;
+  createdBy: {
+    id: string;
+    name: string;
+  };
+};
+
 type Prop = {
   id: string;
   description: string;
-  ev: any; // Decimal from database
+  ev: number; // Converted from Decimal in getProps action
   end: Date;
   created: Date;
   users_props_created_byTousers: {
@@ -32,6 +44,8 @@ type Prop = {
     name: string | null;
   };
   prop_options: PropOption[];
+  tallies: Tally[];
+  tallyCount: number;
 };
 
 interface PropsListClientProps {
@@ -196,12 +210,24 @@ export function PropsListClient({ initialProps, currentUser }: PropsListClientPr
                           <Coins className="h-4 w-4 text-muted-foreground" />
                           <span>{option.line.toString()}</span>
                         </div>
-                        <Badge variant={"default"} className={cn(option.odds_under > 0 && "bg-green-500")}>
-                          {option.odds_under > 0 ? "+" : ""}{option.odds_under}
-                        </Badge>
-                        <Badge variant={"default"} className={cn(option.odds_over > 0 && "bg-green-500")}>
-                          {option.odds_over > 0 ? "+" : ""}{option.odds_over}
-                        </Badge>
+                        <AddToBetslipButton
+                          propId={prop.id}
+                          propDescription={prop.description}
+                          lineId={option.id}
+                          line={Number(option.line)}
+                          selection="under"
+                          odds={option.odds_under}
+                          createdBy={option.users_prop_options_created_byTousers.name || 'Unknown'}
+                        />
+                        <AddToBetslipButton
+                          propId={prop.id}
+                          propDescription={prop.description}
+                          lineId={option.id}
+                          line={Number(option.line)}
+                          selection="over"
+                          odds={option.odds_over}
+                          createdBy={option.users_prop_options_created_byTousers.name || 'Unknown'}
+                        />
                       </div>
                       
                       <div className="px-3 pb-1">
@@ -224,6 +250,15 @@ export function PropsListClient({ initialProps, currentUser }: PropsListClientPr
                     onPropOptionAdded={(newOption) => handlePropOptionAdded(prop.id, newOption)}
                   />
                 )}
+                
+                {/* Tallies Section */}
+                <div className="mt-4 pt-4 border-t border-muted">
+                  <TalliesSection 
+                    propId={prop.id}
+                    initialTallies={prop.tallies}
+                    initialCount={prop.tallyCount}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

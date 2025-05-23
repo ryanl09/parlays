@@ -11,6 +11,7 @@ model parlay_props {
   parlay_id      String       @db.VarChar(36)
   prop_option_id String       @db.VarChar(36)
   is_over        Boolean
+  odds           Int
   created        DateTime     @default(now()) @db.Timestamp(0)
   modified       DateTime     @default(now()) @db.Timestamp(0)
   active         Boolean      @default(true)
@@ -24,7 +25,8 @@ model parlay_props {
 model parlays {
   id           String         @id @db.VarChar(36)
   user_id      String         @db.VarChar(36)
-  name         String         @db.Text
+  name         String?        @db.Text
+  coins        Int
   created      DateTime       @default(now()) @db.Timestamp(0)
   modified     DateTime       @default(now()) @db.Timestamp(0)
   active       Boolean        @default(true)
@@ -56,6 +58,7 @@ model prop_options {
 }
 
 model prop_points {
+  id                                   Int      @id @default(autoincrement())
   prop_id                              String   @db.VarChar(36)
   created                              DateTime @default(now()) @db.Timestamp(0)
   modified                             DateTime @default(now()) @db.Timestamp(0)
@@ -66,9 +69,9 @@ model prop_points {
   users_prop_points_created_byTousers  users    @relation("prop_points_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_prop_points_users_created_by")
   users_prop_points_modified_byTousers users    @relation("prop_points_modified_byTousers", fields: [modified_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_prop_points_users_modified_by")
 
-  @@id([prop_id, created, created_by])
   @@index([created_by], map: "fk_prop_points_users_created_by")
   @@index([modified_by], map: "fk_prop_points_users_modified_by")
+  @@index([prop_id], map: "fk_prop_points_props_prop_id")
 }
 
 model props {
@@ -82,6 +85,7 @@ model props {
   created_by                     String         @db.VarChar(36)
   modified_by                    String         @db.VarChar(36)
   active                         Boolean        @default(true)
+  is_private                     Boolean        @default(false)
   prop_options                   prop_options[]
   prop_points                    prop_points[]
   users_props_created_byTousers  users          @relation("props_created_byTousers", fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_props_users_created_by")
@@ -109,4 +113,12 @@ model users {
   props_props_created_byTousers                props[]        @relation("props_created_byTousers")
   props_props_modified_byTousers               props[]        @relation("props_modified_byTousers")
   props_props_user_idTousers                   props[]        @relation("props_user_idTousers")
+  user_coins                                   user_coins?
+}
+
+model user_coins {
+  user_id  String   @id @db.VarChar(36)
+  coins    Int
+  modified DateTime @default(now()) @db.Timestamp(0)
+  users    users    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_coins_users_user_id")
 }

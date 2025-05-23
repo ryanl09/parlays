@@ -7,8 +7,10 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ListChecks, Users, Package, ClipboardList } from "lucide-react";
+import { ListChecks, Users, Package, ClipboardList, ShoppingCart } from "lucide-react";
 import { ReactNode } from "react";
+import { BetslipIndicator } from "@/app/components/betslip/betslip-indicator";
+import { CoinsBalance } from "@/app/components/users/coins-balance";
 
 const routes = [
   {
@@ -25,6 +27,11 @@ const routes = [
     name: "Parlays",
     href: "/parlays",
     icon: ClipboardList,
+  },
+  {
+    name: "Betslip",
+    href: "/betslip",
+    icon: ShoppingCart,
   },
 ];
 
@@ -60,7 +67,7 @@ export default function Navigation({ children }: { children: ReactNode }) {
                     key={route.href}
                     href={route.href}
                     className={cn(
-                      "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                      "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors relative",
                       pathname === route.href
                         ? "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-50"
                         : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -68,10 +75,14 @@ export default function Navigation({ children }: { children: ReactNode }) {
                   >
                     <route.icon className="mr-3 h-5 w-5" />
                     {route.name}
+                    {route.href === '/betslip' && <BetslipIndicator />}
                   </Link>
                 ))}
               </nav>
             </ScrollArea>
+            <div className="border-t border-gray-200 dark:border-gray-800 p-2">
+              <CoinsBalance />
+            </div>
           </div>
         </div>
       </div>
@@ -91,7 +102,7 @@ export default function Navigation({ children }: { children: ReactNode }) {
               key={route.href}
               href={route.href}
               className={cn(
-                "flex flex-col items-center py-3 px-2 flex-1",
+                "flex flex-col items-center py-3 px-2 flex-1 relative",
                 pathname === route.href
                   ? "text-gray-900 dark:text-gray-50"
                   : "text-gray-600 dark:text-gray-400"
@@ -99,6 +110,7 @@ export default function Navigation({ children }: { children: ReactNode }) {
             >
               <route.icon className="h-6 w-6" />
               <span className="text-xs mt-1">{route.name}</span>
+              {route.href === '/betslip' && <BetslipIndicator />}
             </Link>
           ))}
         </div>
