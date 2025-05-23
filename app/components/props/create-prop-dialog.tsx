@@ -12,6 +12,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { useState } from "react";
 import { createProp } from "@/app/actions/props/create-prop";
 import { usePath } from "@/hooks/use-path";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ export const CreatePropDialog = ({
     const [userEVs, setUserEVs] = useState<UserEVItem[]>([]);
     const [endDate, setEndDate] = useState<Date | undefined>(undefined);
     const path = usePath();
+    const isMobile = useIsMobile();
 
     const availableUsers = users.filter(user => 
         !userEVs.some(item => item.userId === user.id)
@@ -134,45 +136,80 @@ export const CreatePropDialog = ({
 
                         <div className="grid gap-2">
                             <Label htmlFor="end-date">End Date & Time</Label>
-                            <div className="flex gap-2">
-                                <div className="flex-1">
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                                id="end-date"
-                                                variant="outline"
-                                                className={cn(
-                                                    "w-full justify-start text-left font-normal",
-                                                    !endDate && "text-muted-foreground"
-                                                )}
-                                            >
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                selected={endDate}
-                                                onSelect={setEndDate}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
+                            {isMobile ? (
+                                // Native inputs for mobile
+                                <div className="flex gap-2">
+                                    <Input
+                                        type="date"
+                                        value={endDate ? format(endDate, "yyyy-MM-dd") : ""}
+                                        onChange={(e) => {
+                                            if (e.target.value) {
+                                                const selectedDate = new Date(e.target.value);
+                                                if (endDate) {
+                                                    selectedDate.setHours(endDate.getHours(), endDate.getMinutes());
+                                                }
+                                                setEndDate(selectedDate);
+                                            } else {
+                                                setEndDate(undefined);
+                                            }
+                                        }}
+                                        className="flex-1"
+                                    />
+                                    <Input
+                                        type="time"
+                                        value={endDate ? format(endDate, "HH:mm") : ""}
+                                        onChange={(e) => {
+                                            if (!endDate || !e.target.value) return;
+                                            const [hours, minutes] = e.target.value.split(':').map(Number);
+                                            const newDate = new Date(endDate);
+                                            newDate.setHours(hours, minutes);
+                                            setEndDate(newDate);
+                                        }}
+                                        className="flex-1"
+                                    />
                                 </div>
-                                <Input
-                                    type="time"
-                                    value={endDate ? format(endDate, "HH:mm") : ""}
-                                    onChange={(e) => {
-                                        if (!endDate) return;
-                                        const [hours, minutes] = e.target.value.split(':').map(Number);
-                                        const newDate = new Date(endDate);
-                                        newDate.setHours(hours, minutes);
-                                        setEndDate(newDate);
-                                    }}
-                                    className="flex-1"
-                                />
-                            </div>
+                            ) : (
+                                // Custom calendar for desktop
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    id="end-date"
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "w-full justify-start text-left font-normal",
+                                                        !endDate && "text-muted-foreground"
+                                                    )}
+                                                >
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0">
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={endDate}
+                                                    onSelect={setEndDate}
+                                                    initialFocus
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                    </div>
+                                    <Input
+                                        type="time"
+                                        value={endDate ? format(endDate, "HH:mm") : ""}
+                                        onChange={(e) => {
+                                            if (!endDate) return;
+                                            const [hours, minutes] = e.target.value.split(':').map(Number);
+                                            const newDate = new Date(endDate);
+                                            newDate.setHours(hours, minutes);
+                                            setEndDate(newDate);
+                                        }}
+                                        className="flex-1"
+                                    />
+                                </div>
+                            )}
                         </div>
                         
                         <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
