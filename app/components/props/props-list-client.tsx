@@ -10,6 +10,7 @@ import { CalendarIcon, Coins, ClockIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { TalliesSection } from "@/app/components/tallies/tallies-section";
+import { PropOptionsRefreshButton } from "./prop-options-refresh-button";
 
 type PropOption = {
   id: string;
@@ -54,15 +55,23 @@ interface PropsListClientProps {
     id: string;
     name: string | null;
   };
+  onRefreshHandler?: (refreshFn: (props: Prop[]) => void) => void;
 }
 
-export function PropsListClient({ initialProps, currentUser }: PropsListClientProps) {
+export function PropsListClient({ initialProps, currentUser, onRefreshHandler }: PropsListClientProps) {
   const [props, setProps] = useState<Prop[]>(initialProps);
 
   // Update props when initialProps changes (e.g., when search params change)
   useEffect(() => {
     setProps(initialProps);
   }, [initialProps]);
+
+  // Provide refresh handler to parent component
+  useEffect(() => {
+    if (onRefreshHandler) {
+      onRefreshHandler(setProps);
+    }
+  }, [onRefreshHandler]);
 
   const handlePropOptionAdded = (propId: string, newOption: { id: string; line: number; oddsOver: number; oddsUnder: number; }) => {
     // Convert the simple callback object to the full PropOption type
@@ -150,7 +159,7 @@ export function PropsListClient({ initialProps, currentUser }: PropsListClientPr
           <Card key={prop.id} className="overflow-hidden hover:shadow-md transition-shadow relative">
             {/* Status badge */}
             <div className="absolute top-2 right-2">
-              <Badge variant={isExpired ? "destructive" : "default"} className={cn(isExpired ? "bg-destructive/50 text-destructive-foreground" : "bg-green-500")}>
+              <Badge variant={"default"} className={cn(isExpired ? "bg-destructive/50 text-destructive-foreground" : "bg-green-500")}>
                 {isExpired ? "Closed" : "Open"}
               </Badge>
             </div>
@@ -194,6 +203,7 @@ export function PropsListClient({ initialProps, currentUser }: PropsListClientPr
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-3">
                   <span className="text-sm font-medium">Lines</span>
+                  <PropOptionsRefreshButton />
                   <span className="text-sm font-medium">Under</span>
                   <span className="text-sm font-medium">Over</span>
                 </div>

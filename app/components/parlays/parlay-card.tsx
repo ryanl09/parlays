@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Coins, ChevronDown, ChevronUp, Calendar, User } from 'lucide-react';
 import { CountdownTimer } from './countdown-timer';
+import { ParlayProgressBar } from './parlay-progress-bar';
+import { CashOutButton } from './cash-out-button';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { TalliesSection } from '@/app/components/tallies/tallies-section';
@@ -79,6 +81,63 @@ export function ParlayCard({ parlay, className }: ParlayCardProps) {
 
   const potentialPayout = Math.round(parlay.coins * (totalOdds - 1));
 
+  // Calculate overall parlay progress
+  const winningLegs = parlay.parlay_props.filter(leg => {
+    const tallies = leg.prop_options.props.tallyCount;
+    const line = leg.prop_options.line;
+    return leg.is_over ? tallies > line : tallies < line;
+  }).length;
+  
+  const totalLegs = parlay.parlay_props.length;
+  const parlayProgress = totalLegs > 0 ? (winningLegs / totalLegs) * 100 : 0;
+  const isParlayWinning = winningLegs === totalLegs;
+
+  // Calculate estimated cash out value
+  let totalProbability = 1;
+  for (const leg of parlay.parlay_props) {
+    const tallies = leg.prop_options.props.tallyCount;
+    const line = Number(leg.prop_options.line);
+    const isOver = leg.is_over;
+    
+    let legProbability = 0.5; // Default 50/50
+    
+    if (tallies === 0) {
+      // No data yet, use original odds probability
+      const odds = leg.odds;
+      if (odds > 0) {
+        legProbability = 100 / (odds + 100);
+      } else {
+        legProbability = Math.abs(odds) / (Math.abs(odds) + 100);
+      }
+    } else {
+      // Calculate probability based on current tallies
+      const distance = Math.abs(tallies - line);
+      const maxDistance = Math.max(line, 10);
+      
+      if (isOver) {
+        if (tallies > line) {
+          legProbability = 0.8 + (distance / maxDistance) * 0.15;
+        } else {
+          legProbability = 0.3 - (distance / maxDistance) * 0.25;
+        }
+      } else {
+        if (tallies < line) {
+          legProbability = 0.8 + (distance / maxDistance) * 0.15;
+        } else {
+          legProbability = 0.3 - (distance / maxDistance) * 0.25;
+        }
+      }
+      
+      legProbability = Math.max(0.05, Math.min(0.95, legProbability));
+    }
+    
+    totalProbability *= legProbability;
+  }
+  
+  const cashOutFactor = 0.85; // House takes 15%
+  const estimatedCashOut = Math.round(parlay.coins + (potentialPayout * totalProbability * cashOutFactor));
+  const finalCashOut = Math.max(estimatedCashOut, Math.round(parlay.coins * 0.1));
+
   return (
     <Card className={cn("w-full transition-all duration-200", className)}>
       <CardHeader className="pb-3">
@@ -132,6 +191,42 @@ export function ParlayCard({ parlay, className }: ParlayCardProps) {
             +{potentialPayout.toLocaleString()} coins
           </Badge>
         </div>
+        
+        {/* Overall Parlay Progress */}
+        <div className="space-y-2 pt-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">
+              Progress: {winningLegs}/{totalLegs} legs
+            </span>
+            <span className={cn(
+              'font-medium',
+              isParlayWinning ? 'text-green-600' : 'text-muted-foreground'
+            )}>
+              {isParlayWinning ? '🎉 All legs winning!' : `${winningLegs} winning`}
+            </span>
+          </div>
+          
+          <div className="w-full bg-muted rounded-full h-2">
+            <div 
+              className={cn(
+                'h-full rounded-full transition-all duration-300',
+                isParlayWinning 
+                  ? 'bg-green-500' 
+                  : parlayProgress > 50 
+                    ? 'bg-yellow-500' 
+                    : 'bg-blue-500'
+              )}
+              style={{ width: `${parlayProgress}%` }}
+            />
+          </div>
+        </div>
+        
+        {/* Cash Out Section */}
+        <CashOutButton 
+          parlayId={parlay.id}
+          estimatedCashOut={finalCashOut}
+          className="pt-2"
+        />
       </CardHeader>
 
       {isExpanded && (
@@ -163,6 +258,15 @@ export function ParlayCard({ parlay, className }: ParlayCardProps) {
                       <p className="text-sm text-muted-foreground">
                         {leg.prop_options.props.description}
                       </p>
+                      
+                      {/* Progress Bar */}
+                      <ParlayProgressBar 
+                        tallies={leg.prop_options.props.tallyCount}
+                        line={lineValue}
+                        isOver={leg.is_over}
+                        size="sm"
+                        className="mt-2"
+                      />
                       
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <User className="h-3 w-3" />

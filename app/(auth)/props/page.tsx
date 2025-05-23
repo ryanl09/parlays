@@ -3,6 +3,7 @@ import { getUsers } from "@/app/actions/users/get-users";
 import { CreatePropDialog } from "@/app/components/props/create-prop-dialog";
 import { PropsListClient } from "@/app/components/props/props-list-client";
 import { PropsSortSelector, PropsSortType } from "@/app/components/props/props-sort-selector";
+import { PropsRefreshButton } from "@/app/components/props/props-refresh-button";
 import { UsersSelector } from "@/app/components/users/client/users-selector";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -42,6 +43,7 @@ export default async function PropsPage({ searchParams }: { searchParams: { user
             <div className="flex items-center gap-2">
                 <UsersSelector users={filteredUsers} />
                 <PropsSortSelector defaultValue={sortBy} />
+                <PropsRefreshButton />
             </div>
             <Separator className="my-6" />
             <div className='flex items-center gap-2'>

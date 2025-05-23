@@ -1,5 +1,6 @@
 import { getUserParlays } from '@/app/actions/parlays/get-user-parlays';
 import { ParlayCard } from '@/app/components/parlays/parlay-card';
+import { ParlaysRefreshButton } from '@/app/components/parlays/parlays-refresh-button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -44,11 +45,14 @@ export default async function ParlaysPage() {
                         </div>
                     </div>
                     
-                    <Button asChild>
-                        <Link href="/betslip">
-                            Create New Parlay
-                        </Link>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <ParlaysRefreshButton />
+                        <Button asChild>
+                            <Link href="/betslip">
+                                Create New Parlay
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
             </div>
 
