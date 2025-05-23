@@ -1,8 +1,14 @@
 'use client';
 
 import { Avatar as AvatarComponent, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
-export const Avatar = ({ name }: { name: string }) => {
+interface AvatarProps {
+    name: string;
+    size?: 'sm' | 'md' | 'lg';
+}
+
+export const Avatar = ({ name, size = 'md' }: AvatarProps) => {
     const getInitials = (name: string) => {
         if (!name) return '';
         
@@ -14,8 +20,14 @@ export const Avatar = ({ name }: { name: string }) => {
         return name.substring(0, 2).toUpperCase();
     };
 
+    const sizeClasses = {
+        sm: 'h-5 w-5 text-xs',
+        md: 'h-10 w-10 text-sm',
+        lg: 'h-16 w-16 text-lg'
+    };
+
     return (
-        <AvatarComponent>
+        <AvatarComponent className={cn(sizeClasses[size])}>
             <AvatarFallback className="bg-muted text-muted-foreground">
                 {getInitials(name)}
             </AvatarFallback>

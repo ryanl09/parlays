@@ -10,6 +10,7 @@ datasource db {
 model parlay_props {
   parlay_id      String       @db.VarChar(36)
   prop_option_id String       @db.VarChar(36)
+  is_over        Boolean
   created        DateTime     @default(now()) @db.Timestamp(0)
   modified       DateTime     @default(now()) @db.Timestamp(0)
   active         Boolean      @default(true)
@@ -37,7 +38,8 @@ model prop_options {
   id                                    String         @id @db.VarChar(36)
   prop_id                               String         @db.VarChar(36)
   line                                  Decimal        @db.Decimal(10, 2)
-  odds                                  Int
+  odds_under                            Int
+  odds_over                             Int
   created                               DateTime       @default(now()) @db.Timestamp(0)
   modified                              DateTime       @default(now()) @db.Timestamp(0)
   created_by                            String         @db.VarChar(36)
@@ -74,6 +76,7 @@ model props {
   user_id                        String         @db.VarChar(36)
   description                    String         @db.Text
   ev                             Decimal        @db.Decimal(10, 2)
+  end                            DateTime       @db.Timestamp(0)
   created                        DateTime       @default(now()) @db.Timestamp(0)
   modified                       DateTime       @default(now()) @db.Timestamp(0)
   created_by                     String         @db.VarChar(36)
